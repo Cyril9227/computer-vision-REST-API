@@ -56,12 +56,12 @@ The REST API uses ngrok and flask and is pretty straight forward in its current 
   - MobileNetV2-FPN : https://www.dropbox.com/s/5ndg2gl153nap2x/MobileNetV2_FPN_model_final.pth?dl=1
   - VoVNet-FPN : https://www.dropbox.com/s/01879hbpditrv13/VoVNet_lite_FPN_model_final.pth?dl=1
 
-                    | Model           | Inference Time   |  AP50 (Val) | AP50 (Test) |
-                    |-----------------|------------------|-------------|-------------|
-                    | ResNet-50-FPN   | 134 ms  | 90          | 84          |
-                    | ResNet-101-FPN  | 179 ms  | 95          | 88          |
-                    | MobileNetV2-FPN | 98.3 ms | 95          | 62          |
-                    | VoVNet-19-FPN   | 95.6 ms | 90          | 85          |
+| Model           | Inference Time   |  AP50 (Val) | AP50 (Test) |
+|-----------------|------------------|-------------|-------------|
+| ResNet-50-FPN   | 134 ms  | 90          | 84          |
+| ResNet-101-FPN  | 179 ms  | 95          | 88          |
+| MobileNetV2-FPN | 98.3 ms | 95          | 62          |
+| VoVNet-19-FPN   | 95.6 ms | 90          | 85          |
 
 
 *Nb : Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config.*
