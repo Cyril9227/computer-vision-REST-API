@@ -1,0 +1,29 @@
+_BASE_: "../Base-RCNN-FPN.yaml"
+DATALOADER:
+  NUM_WORKERS: 2
+DATASETS:
+  TRAIN: ("balloon_train", )
+  TEST : ("balloon_val", )
+MODEL:
+  BACKBONE:
+    NAME: "build_vovnet_fpn_backbone"
+    FREEZE_AT: 0
+  WEIGHTS: https://www.dropbox.com/s/h1khv9l7quakvz0/mask_V_19_eSE_FPNLite_ms_3x.pth?dl=1
+  MASK_ON: True
+  ROI_HEADS:
+    BATCH_SIZE_PER_IMAGE : 128
+    NUM_CLASSES : 1
+  VOVNET:
+    CONV_BODY: "V-19-eSE"
+    NORM: FrozenBN
+    OUT_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+  FPN:
+    IN_FEATURES: ["stage2", "stage3", "stage4", "stage5"]
+    OUT_CHANNELS: 128
+SOLVER:
+  BASE_LR : 0.00025
+  IMS_PER_BATCH : 2
+  MAX_ITER: 300
+TEST:  
+  EVAL_PERIOD : 100
+OUTPUT_DIR: "/content/cyril-fv-test-mask-rcnn/tasks_1_3/models/VoVNet-lite-FPN/"

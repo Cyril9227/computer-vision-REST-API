@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block head%}
+
+<head>
+    <link rel="stylesheet" href="{{url_for('static', filename='styles/main.css')}}" />
+</head>
+
+{% endblock %}
+
+{% block body %}
+
+<div>
+    <h1>BALLOON PREDICTOR</h1>
+    <form action="/upload-image" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Select image</label>
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" name="image" id="image">
+                <label class="custom-file-label" for="image"></label>
+            </div>
+        </div>
+        <button type="submit" class="button">Upload</button>
+    </form>
+
+    <form action="/predict" method="POST">
+        <button type="submit" class="button">Predict</button>
+    </form>
+
+    {% endblock %}
