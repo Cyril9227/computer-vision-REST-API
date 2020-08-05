@@ -39,7 +39,7 @@ The REST API uses ngrok and flask and is pretty straight forward in its current 
 1. Download and instantiate the model when the API is launched the first time
 2. Upload a local image
 
-![Input](api-example-input.png)
+![Input](api-example-input.PNG)
 
 3. Run inference
    1. Predicted masks are displayed in the browser
