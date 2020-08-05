@@ -1,12 +1,23 @@
 # Detectron2 REST API
 
+The aim of this project is ...
+
+
 ## Preamble
 
-The aim of this project is to use Deep Learning  
+This project is organized in two folders : 
 
-This project is organized in two parts, first contains code to fine-tune some computer vision models on a custom dataset and to serve a trained model with a REST API built with Flask. The dataset used for this project is the [well known balloon dataset](https://github.com/matterport/Mask_RCNN/releases)
+- The `MaskRCNN_finetune` folder contains all the Deep Learning related code. Specifically, it contains code to download and extract the [well known balloon dataset](https://github.com/matterport/Mask_RCNN/releases), it also contains code to extend Detectron2 with new models... and to fine-tune them on ... 
 
-## Introduction to Object Instance Segmentation
+- The `REST_API_flask` contains the code to serve the trained model with an API built with flask.
+
+This assesment is designed to run on Google Colab but should be reproducible without (too much) hassle on any linux machine with a cuda enabled device.
+
+
+
+
+
+## The Computer Vision part : Mask R-CNN model
 
 In image classification problems, there is usually a single object of interest. For that specific object, we build models to predict whether that object belongs to a specific class. For example, given a picture of an animal, the model should tell you whether it is a cat or a dog.
 
@@ -16,9 +27,6 @@ Image segmentation techniques allow us to detect multiple objects, classify them
 
 **To start with, a good introduction read is:
 [A Brief History of CNNs in Image Segmentation: From R-CNN to Mask R-CNN](https://blog.athelas.com/a-brief-history-of-cnns-in-image-segmentation-from-r-cnn-to-mask-r-cnn-34ea83205de4)**
-
-
-## The Computer Vision part : Mask R-CNN model
 
 
 ### Retrain the model
@@ -63,3 +71,20 @@ We will run your API for testing. So, make sure you document how we can run your
 
 ---
 
+## Trained Models and Metrics 
+
+- Final trained weights for each model are available here : https://www.dropbox.com/sh/yyqecdmbd7howkq/AADxOHGQQXtk7Jn8nIrTpG0Ha?dl=0
+  - ResNet-50-FPN : https://www.dropbox.com/s/we9n6mr1uyxlqt9/ResNet_50_FPN_model_final.pth?dl=1
+  - ResNet-101-FPN : https://www.dropbox.com/s/7xtyuitiembeu79/ResNet101_FPN_model_final.pth?dl=1
+  - MobileNetV2-FPN : https://www.dropbox.com/s/5ndg2gl153nap2x/MobileNetV2_FPN_model_final.pth?dl=1
+  - VoVNet-FPN : https://www.dropbox.com/s/01879hbpditrv13/VoVNet_lite_FPN_model_final.pth?dl=1
+
+| Model           | Inference Time   |  AP50 (Val) | AP50 (Test) |
+|-----------------|------------------|-------------|-------------|
+| ResNet-50-FPN   | 134 ms  | 90          | 84          |
+| ResNet-101-FPN  | 179 ms  | 95          | 88          |
+| MobileNetV2-FPN | 98.3 ms | 95          | 62          |
+| VoVNet-19-FPN   | 95.6 ms | 90          | 85          |
+
+
+**Nb : Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config.** 
