@@ -64,3 +64,8 @@ Final trained weights for each model are available [here](https://www.dropbox.co
   - VoVNet-FPN : https://www.dropbox.com/s/01879hbpditrv13/VoVNet_lite_FPN_model_final.pth?dl=1
 
 *Nb : Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config.*
+
+
+TO-DO : 
+clean / refactor
+deploy with https://www.streamlit.io/
