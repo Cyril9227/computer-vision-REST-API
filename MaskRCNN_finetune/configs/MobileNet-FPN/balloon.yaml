@@ -20,4 +20,4 @@ SOLVER:
   STEPS: (800, 1200, 2000)
 TEST:  
   EVAL_PERIOD : 500
-OUTPUT_DIR: "/content/cyril-fv-test-mask-rcnn/tasks_1_3/models/MobileNet-FPN/"
+OUTPUT_DIR: "/content/computer-vision-REST-API/MaskRCNN_finetune/models/MobileNet-FPN/"
