@@ -69,10 +69,14 @@ The app will first download and instantiate the model when the API is launched t
 | MobileNetV2-FPN | 98.3 ms | 95          | 62          |
 | VoVNet-19-FPN   | 95.6 ms | 90          | 85          |
 
-Final trained weights for each model are available [here](https://www.dropbox.com/sh/yyqecdmbd7howkq/AADxOHGQQXtk7Jn8nIrTpG0Ha?dl=0) : 
-  - ResNet-50-FPN : https://www.dropbox.com/s/we9n6mr1uyxlqt9/ResNet_50_FPN_model_final.pth?dl=1
-  - ResNet-101-FPN : https://www.dropbox.com/s/7xtyuitiembeu79/ResNet101_FPN_model_final.pth?dl=1
-  - MobileNetV2-FPN : https://www.dropbox.com/s/5ndg2gl153nap2x/MobileNetV2_FPN_model_final.pth?dl=1
-  - VoVNet-FPN : https://www.dropbox.com/s/01879hbpditrv13/VoVNet_lite_FPN_model_final.pth?dl=1
+- Final trained weights for each model are available on dropbox : 
+  - Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config. 
+  - ResNet-50-FPN : https://www.dropbox.com/s/yn7m8xnva068glq/ResNet50_FPN_model_final.pth?dl=1
+  - ResNet-101-FPN : https://www.dropbox.com/s/otp52ccygc2t3or/ResNet101_FPN_model_final.pth?dl=1
+  - MobileNetV2-FPN : https://www.dropbox.com/s/tn6fhy829ckp5ar/MobileNetV2_FPN_model_final.pth?dl=1
+  - VoVNet-FPN : https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1
 
-*Nb : Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config.*
+
+- Visual outputs for each model are available under `reports/figures/model_name/predicted_images/`
+
+- Training metrics for each model are available under `models/model_name/`
