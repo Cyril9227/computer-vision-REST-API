@@ -1,6 +1,13 @@
-# Detectron2 REST API
+# Object Recognition App 
 
-The aim of this project is ...
+The aim of this project is to highlight the different phases of a deep learning project, from data preparation to serving the final model through an app. 
+
+Specifically, the steps covered are :
+- Downloading and preparing the dataset
+- Training an object recognition model on Google Colab, using Detectron2 framework
+- Extending Detectron2 with custom neural networks
+- Serving the model on https://www.streamlit.io/
+- (Additional code to serve the model with a very basic REST API is also provided)
 
 
 ## Preamble
@@ -11,11 +18,15 @@ This project is organized in two folders :
 
 - The `REST_API_flask` contains the code to serve the trained model with an API built with flask.
 
-This assesment is designed to run on Google Colab but should be reproducible without (too much) hassle on any linux machine with a cuda enabled device.
+**This project is designed to run on Google Colab but should be reproducible without (too much) hassle on any linux machine with a cuda enabled device.**
+
+Please use `notebooks/object_recognition.ipynb` to run the deep learning code and `notebooks/object_recognition_REST_API.ipynb` to use the REST API.
 
 
 
 ## The Computer Vision part : Mask R-CNN model
+
+### Introduction
 
 In image classification problems, there is usually a single object of interest. For that specific object, we build models to predict whether that object belongs to a specific class. For example, given a picture of an animal, the model should tell you whether it is a cat or a dog.
 
@@ -28,24 +39,25 @@ Image segmentation techniques such as [Mask R CNN](https://arxiv.org/pdf/1703.06
 
 ### Retrain the model
 
-Most Mask R-CNN model uses `resnet101` as a backbone, which is a humongous model. According to the original paper, the inference time is lower bounded at 200ms which is very slow.
+Most Mask R-CNN model uses `resnet101` as a backbone, which is a humongous model. According to the original paper, the inference time is lower bounded at 200ms which is very slow. We provide code to try out different backbone, a comparison table is available at the end of this document. 
 
-
+Please, upload `notebooks/object_recognition.ipynb` to Google Colab and run the cells to reproduce the results. 
 
 ## The AI API : Build a simple REST API using flask
 
-The REST API uses ngrok and flask and is pretty straight forward in its current state :
+The REST API uses ngrok and flask and is pretty straight forward in its current state. To use it, please upload `notebooks/object_recognition_REST_API.ipynb` to Google Colab and follow the cells. 
 
-1. Download and instantiate the model when the API is launched the first time
-2. Upload a local image
+The app will first download and instantiate the model when the API is launched then you can :
 
-![Input](api-example-input.PNG)
+1. Upload a local image
 
-3. Run inference
+![Input](imgs/api-example-input.PNG)
+
+2. Run inference
    1. Predicted masks are displayed in the browser
    2. Predicted masks can be downloaded by the user
 
-![Output](api-example-output.png)
+![Output](imgs/api-example-output.png)
 
 
 ## Trained Models and Results
@@ -64,8 +76,3 @@ Final trained weights for each model are available [here](https://www.dropbox.co
   - VoVNet-FPN : https://www.dropbox.com/s/01879hbpditrv13/VoVNet_lite_FPN_model_final.pth?dl=1
 
 *Nb : Download links for each model can be used directly as a config entry or as a script argument, those links are provided in the inference_config.*
-
-
-TO-DO : 
-clean / refactor
-deploy with https://www.streamlit.io/
