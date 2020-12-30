@@ -14,7 +14,7 @@ Specifically, the steps covered are :
 
 This project is organized in two folders : 
 
-- The `MaskRCNN_finetune` folder contains all the Deep Learning related code. Specifically, it contains code to download and extract the [well known balloon dataset](https://github.com/matterport/Mask_RCNN/releases), it also contains code to extend Detectron2 with new models... and to fine-tune them on ... 
+- The `MaskRCNN_finetune` folder contains all the Deep Learning related code. Specifically, it contains code to download and extract the [well known balloon dataset](https://github.com/matterport/Mask_RCNN/releases), it also contains code to extend Detectron2 with new models (MobileNetV2 and VoVNet-19) and to fine-tune them on our dataset.
 
 - The `REST_API_flask` contains the code to serve the trained model with an API built with flask.
 
