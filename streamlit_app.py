@@ -33,7 +33,7 @@ def get_config_path(model_name):
 def get_weights_url(model_name):
   return WEIGHTS[model_name]
 
-def create_predictor(cfg_path, weights_path, use_cpu=True):
+def load_model(cfg_path, weights_path, use_cpu=True):
     """
     Create a simple predictor object from config path
 
@@ -51,17 +51,6 @@ def create_predictor(cfg_path, weights_path, use_cpu=True):
     )
     return DefaultPredictor(cfg)
 
-def load_model(cfg_path, weights_path, use_cpu=True):
-    """
-    Use a global variable to load the model only once to not slow down the API.
-
-    Args:
-        cfg_path (cfg): Config path, use the ResNet-101 by default.
-        weights_path (str): Path of pretrained weights or URL
-        use_cpu (bool, optional): Use cpu for forward pass (slower). Defaults to False.
-    """
-    global model
-    model = create_predictor(cfg_path, weights_path, use_cpu)
 
 def predict(model, image, remove_colors=False):
     """Read the image from the path stored in memory (global var), compute the masks and
