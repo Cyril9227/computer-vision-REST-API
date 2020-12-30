@@ -27,7 +27,6 @@ WEIGHTS = {
           'VoVNet-19' : 'https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1'
           }
 
-
 def get_config_path(model_name):
   return CONFIGS[model_name]
 
@@ -64,12 +63,15 @@ def load_model(cfg_path, weights_path, use_cpu=True):
     global model
     model = create_predictor(cfg_path, weights_path, use_cpu)
 
+def predict(model, image):
+    return image
 
 def build_app():
     st.title('Object Recognition App')
-    selected_model = st.selectbox('Select a Model : ', ['ResNet-50', 'ResNet-101', 'MobileNetV2', 'VoVNet-19'])
+    selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
     cfg_path = get_config_path(selected_model)
     weights_url = get_weights_url(selected_model)
+    # model = load_model(cfg_path, weights_url)
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
