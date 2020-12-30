@@ -71,16 +71,20 @@ def predict(model, image, remove_colors=False):
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
     return out.get_image()
 
+
+# pb c'est qu'on va load le modèle à chaque fois qu'on upload une image -> lent
+# mais si on load le modèle avant bah ça prends que le premier modele de st.selectbox
+# ptet la solution c de faire une clause avant
 def build_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
-    cfg_path = get_config_path(selected_model)
-    weights_url = get_weights_url(selected_model)
-    model = load_model(cfg_path, weights_url)
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, 1)
+        cfg_path = get_config_path(selected_model)
+        weights_url = get_weights_url(selected_model)
+        model = load_model(cfg_path, weights_url)
         result_img = predict(model, img)
         st.image(img, caption='Processed Image', use_column_width=True)
 
