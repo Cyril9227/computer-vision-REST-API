@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-sys.path.append("../tasks_1_3")
+sys.path.append("../MaskRCNN_finetune")
 
 import numpy as np
 from flask import (
@@ -45,14 +45,14 @@ def get_parser():
 
     parser.add_argument(
         "--config-file",
-        default="/content/cyril-fv-test-mask-rcnn/tasks_1_3/configs/ResNet-101-FPN/balloon.yaml",
+        default="/content/computer-vision-REST-API/MaskRCNN_finetune/configs/ResNet-101-FPN/balloon.yaml",
         metavar="path",
         help="Path to the model config file. Possible improvement : let the user instead choose the desired model thru the app then load the ad-hoc config file.",
     )
 
     parser.add_argument(
         "--weights",
-        default="https://www.dropbox.com/s/7xtyuitiembeu79/ResNet101_FPN_model_final.pth?dl=1",
+        default="https://www.dropbox.com/s/otp52ccygc2t3or/ResNet101_FPN_model_final.pth?dl=1",
         metavar="path",
         help="Path to the model file weights. Possible improvement : let the user instead choose the desired model thru the app then load the ad-hoc pretrained weights.",
     )
