@@ -86,7 +86,7 @@ def build_app():
         weights_url = get_weights_url(selected_model)
         model = load_model(cfg_path, weights_url)
         result_img = predict(model, img)
-        st.image(img, caption='Processed Image', use_column_width=True)
+        st.image(result_img, caption='Processed Image', use_column_width=True)
 
 if __name__ == '__main__':
     build_app()
