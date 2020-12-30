@@ -1,43 +1,85 @@
-import cv2
+import argparse
+import os
+import sys
+
+sys.path.append("../MaskRCNN_finetune")
 
 import numpy as np
-import streamlit as st
-
+from flask import (
+    Flask,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+)
 from PIL import Image
 
+import cv2
 from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import ColorMode, Visualizer
+from flask_ngrok import run_with_ngrok
+from src.models.backbone import *
+from src.models.custom_config import add_custom_config
 
-from MaskRCNN_finetune.src.models.backbone import *
-from MaskRCNN_finetune.src.models.custom_config import add_custom_config
+app = Flask(__name__)
 
 
-CONFIGS = {
-          'ResNet-50' : '~/MaskRCNN_finetune/configs/ResNet-50-FPN/balloon.yaml',
-          'ResNet-101' : '~/MaskRCNN_finetune/configs/ResNet-101-FPN/balloon.yaml',
-          'MobileNetV2' : '~/MaskRCNN_finetune/configs/MobileNet-FPN/balloon.yaml',
-          'VoVNet-19' : '~/MaskRCNN_finetune/configs/VoVNet-lite-FPN/balloon.yaml'
-          }
-
-WEIGHTS = {
-          'ResNet-50' : 'https://www.dropbox.com/s/yn7m8xnva068glq/ResNet50_FPN_model_final.pth?dl=1',
-          'ResNet-101' : 'https://www.dropbox.com/s/otp52ccygc2t3or/ResNet101_FPN_model_final.pth?dl=1',
-          'MobileNetV2' : 'https://www.dropbox.com/s/tn6fhy829ckp5ar/MobileNetV2_FPN_model_final.pth?dl=1',
-          'VoVNet-19' : 'https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1'
-          }
-
-def get_config_path(model_name):
-  return CONFIGS[model_name]
-
-def get_weights_url(model_name):
-  return WEIGHTS[model_name]
-
-def create_predictor(cfg_path, weights_path, use_cpu=True):
+def get_parser():
     """
-    Create a simple predictor object from config path
+    Create a parser with some arguments used to configure the app.
+    Returns:
+        argparse.ArgumentParser:
+    """
+    parser = argparse.ArgumentParser(description="configuration")
+    parser.add_argument(
+        "--upload-folder",
+        required=True,
+        metavar="path",
+        help="Target path where the images will be uploaded for inference",
+    )
 
+    parser.add_argument(
+        "--config-file",
+        default="/content/computer-vision-REST-API/MaskRCNN_finetune/configs/ResNet-101-FPN/balloon.yaml",
+        metavar="path",
+        help="Path to the model config file. Possible improvement : let the user instead choose the desired model thru the app then load the ad-hoc config file.",
+    )
+
+    parser.add_argument(
+        "--weights",
+        default="https://www.dropbox.com/s/otp52ccygc2t3or/ResNet101_FPN_model_final.pth?dl=1",
+        metavar="path",
+        help="Path to the model file weights. Possible improvement : let the user instead choose the desired model thru the app then load the ad-hoc pretrained weights.",
+    )
+
+    parser.add_argument(
+        "--remove-colors",
+        default=False,
+        action="store_true",
+        help="One can remove colors of unsegmented pixels for better clarity as the mask and balloons colors can be hard to distinguish.",
+    )
+
+    parser.add_argument(
+        "--use-ngrok",
+        default=False,
+        action="store_true",
+        help="Need to set this arg to True to be able to run it on google collab",
+    )
+
+    parser.add_argument(
+        "--infer-with-cpu",
+        default=False,
+        action="store_true",
+        help="Use cpu for forward pass (slower)",
+    )
+    return parser
+
+
+def create_predictor(cfg_path, weights_path, use_cpu=False):
+    """Create a simple predictor object from output path
   Returns:
       DefaultPredictor: a predictor object
   """
@@ -52,10 +94,9 @@ def create_predictor(cfg_path, weights_path, use_cpu=True):
     )
     return DefaultPredictor(cfg)
 
-def load_model(cfg_path, weights_path, use_cpu=True):
-    """
-    Use a global variable to load the model only once to not slow down the API.
 
+def load_model(cfg_path, weights_path, use_cpu=False):
+    """Use a global variable to load the model only once to not slow down the API.
     Args:
         cfg_path (cfg): Config path, use the ResNet-101 by default.
         weights_path (str): Path of pretrained weights or URL
@@ -64,40 +105,99 @@ def load_model(cfg_path, weights_path, use_cpu=True):
     global model
     model = create_predictor(cfg_path, weights_path, use_cpu)
 
-def predict(model, image):
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
     """Read the image from the path stored in memory (global var), compute the masks and
     the % of masked pixels, store the resulting image in the desired location then redirect to the
     show_image.html page
     """
     balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
 
-    outputs = model(image)
+    if os.path.isfile(img_path):
+        im = cv2.imread(img_path)
+    else:
+        # the user clicked predict before uploading a file
+        # or the uploaded file is incorrect
+        return render_template("index.html")
+    file_name = img_path.split("/")[-1].split(".")[0]
+    n_pixels = im.shape[0] * im.shape[1]
+    outputs = model(im)
     tensor = outputs["instances"].pred_masks.to("cpu").numpy()
+    # find a better way to compute that, this is not correct
+    # https://github.com/facebookresearch/detectron2/issues/1788
+    n_pixels_masked = np.sum(tensor) / n_pixels
+    n_pixels_masked *= 100
+    n_pixels_masked = np.round(n_pixels_masked)
 
     # remove the colors of unsegmented pixels for better readibility
     color_mode = ColorMode.IMAGE_BW if remove_colors else ColorMode.IMAGE
 
     v = Visualizer(
-        image, metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
+        im[:, :, ::-1], metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
     )
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    out_img = out.get_image()
-    return out_img
+    out_img = out.get_image()[:, :, ::-1]
+    global out_file_name
+    out_file_name = file_name + "_prediction.PNG"
+    out_path = os.path.join(app.config["IMAGE_OUTPUTS"], out_file_name)
+    img_to_save = Image.fromarray(out_img[:, :, ::-1])
+    img_to_save.save(out_path)
+    return render_template("show_image.html", pred=n_pixels_masked, user_image=out_path)
 
 
+@app.route("/download_prediction")
+def download_prediction():
+    return send_from_directory(
+        app.config["IMAGE_OUTPUTS"], out_file_name, as_attachment=True
+    )
 
-def build_app():
-    st.title('Object Recognition App')
-    selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
-    cfg_path = get_config_path(selected_model)
-    weights_url = get_weights_url(selected_model)
-    model = load_model(cfg_path, weights_url)
-    uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
-    if uploaded_img is not None:
-        file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
-        result_img = predict(model, img)
-        st.image(result_img, caption='Processed Image', use_column_width=True)
 
-if __name__ == '__main__':
-    build_app()
+@app.route("/upload-image", methods=["GET", "POST"])
+def upload_image():
+    """Store the file path in memory and store the uploaded file in the desired location
+    """
+    # possible improvement : make the file upload "secure"
+    if request.method == "POST":
+        if request.files:
+            image = request.files["image"]
+            global img_path
+            img_path = os.path.join(app.config["IMAGE_UPLOADS"], image.filename)
+            image.save(img_path)
+            return redirect(request.url)
+    return render_template("index.html")
+
+
+def main():
+    args = get_parser().parse_args()
+    if args.use_ngrok:
+        run_with_ngrok(app)
+    app.config["IMAGE_UPLOADS"] = args.upload_folder
+
+    os.makedirs(app.config["IMAGE_UPLOADS"], exist_ok=True)
+
+    app.config["IMAGE_OUTPUTS"] = os.path.join("./static", "predictions")
+
+    os.makedirs(app.config["IMAGE_OUTPUTS"], exist_ok=True)
+
+    # use ResNet101-FPN for inference
+    # an improvement would be to use a drop-down list to choose from
+    # different pretrained models (mobilenet, resnet50 etc)
+    load_model(
+        cfg_path=args.config_file,
+        weights_path=args.weights,
+        use_cpu=args.infer_with_cpu,
+    )
+
+    global remove_colors
+    remove_colors = args.remove_colors
+    app.run()  # nosec
+
+
+if __name__ == "__main__":
+    main()
