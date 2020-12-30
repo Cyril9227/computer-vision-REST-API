@@ -63,20 +63,37 @@ def load_model(cfg_path, weights_path, use_cpu=True):
     global model
     model = create_predictor(cfg_path, weights_path, use_cpu)
 
-def predict(model, image):
-    return image
+def predict(model, image, remove_colors=False):
+    """Read the image from the path stored in memory (global var), compute the masks and
+    the % of masked pixels, store the resulting image in the desired location then redirect to the
+    show_image.html page
+    """
+    balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
+
+    outputs = model(image)
+    tensor = outputs["instances"].pred_masks.to("cpu").numpy()
+
+    # remove the colors of unsegmented pixels for better readibility
+    color_mode = ColorMode.IMAGE_BW if remove_colors else ColorMode.IMAGE
+
+    v = Visualizer(
+        image, metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
+    )
+    out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
+    return out.get_image()
 
 def build_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
     cfg_path = get_config_path(selected_model)
     weights_url = get_weights_url(selected_model)
-    # model = load_model(cfg_path, weights_url)
+    model = load_model(cfg_path, weights_url)
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, 1)
-        result_img = st.image(img, caption='Processed Image', use_column_width=True)
+        result_img = predict(model, img)
+        st.image(img, caption='Processed Image', use_column_width=True)
 
 if __name__ == '__main__':
     build_app()
