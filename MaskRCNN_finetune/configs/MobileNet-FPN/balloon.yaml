@@ -6,7 +6,7 @@ DATASETS:
   TEST : ("balloon_val", )
 MODEL:
   BACKBONE:
-    NAME: build_mobilenet_fpn_backbone
+    NAME: "build_mobilenet_fpn_backbone"
     FREEZE_AT: 0
   WEIGHTS: https://dl.dropbox.com/s/q4iceofvlcu207c/faster_mobilenetv2_FPNLite_ms_3x.pth
   MASK_ON: True

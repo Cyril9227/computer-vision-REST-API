@@ -3,13 +3,73 @@ import cv2
 import numpy as np
 import streamlit as st
 
+from PIL import Image
+
+from detectron2.config import get_cfg
+from detectron2.data import DatasetCatalog, MetadataCatalog
+from detectron2.engine import DefaultPredictor
+from detectron2.utils.visualizer import ColorMode, Visualizer
+
 from MaskRCNN_finetune.src.models.backbone import *
 from MaskRCNN_finetune.src.models.custom_config import add_custom_config
+
+CONFIGS = {
+          'ResNet-50' : 'MaskRCNN_finetune/configs/ResNet-50-FPN/balloon.yaml',
+          'ResNet-101' : 'MaskRCNN_finetune/configs/ResNet-101-FPN/balloon.yaml',
+          'MobileNetV2' : 'MaskRCNN_finetune/configs/MobileNet-FPN/balloon.yaml',
+          'VoVNet-19' : 'MaskRCNN_finetune/configs/VoVNet-lite-FPN/balloon.yaml'
+          }
+
+WEIGHTS = {
+          'ResNet-50' : 'https://www.dropbox.com/s/yn7m8xnva068glq/ResNet50_FPN_model_final.pth?dl=1',
+          'ResNet-101' : 'https://www.dropbox.com/s/otp52ccygc2t3or/ResNet101_FPN_model_final.pth?dl=1',
+          'MobileNetV2' : 'https://www.dropbox.com/s/tn6fhy829ckp5ar/MobileNetV2_FPN_model_final.pth?dl=1',
+          'VoVNet-19' : 'https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1'
+          }
+
+
+def get_config_path(model_name):
+  return CONFIGS[model_name]
+
+def get_weights_url(model_name):
+  return WEIGHTS[model_name]
+
+def create_predictor(cfg_path, weights_path, use_cpu=True):
+    """
+    Create a simple predictor object from config path
+
+  Returns:
+      DefaultPredictor: a predictor object
+  """
+    cfg = get_cfg()
+    add_custom_config(cfg)
+    cfg.merge_from_file(cfg_path)
+    if use_cpu:
+        cfg.MODEL.DEVICE = "cpu"
+    cfg.MODEL.WEIGHTS = weights_path
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = (
+        0.7  # set the testing threshold for this model
+    )
+    return DefaultPredictor(cfg)
+
+def load_model(cfg_path, weights_path, use_cpu=True):
+    """
+    Use a global variable to load the model only once to not slow down the API.
+
+    Args:
+        cfg_path (cfg): Config path, use the ResNet-101 by default.
+        weights_path (str): Path of pretrained weights or URL
+        use_cpu (bool, optional): Use cpu for forward pass (slower). Defaults to False.
+    """
+    global model
+    model = create_predictor(cfg_path, weights_path, use_cpu)
 
 
 def build_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['ResNet-50', 'ResNet-101', 'MobileNetV2', 'VoVNet-19'])
+    cfg_path = get_config_path(selected_model)
+    weights_url = get_weights_url(selected_model)
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
