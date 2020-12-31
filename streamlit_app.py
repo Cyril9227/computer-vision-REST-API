@@ -71,10 +71,10 @@ def draw_predictions(image, outputs, remove_colors=False):
     color_mode = ColorMode.IMAGE_BW if remove_colors else ColorMode.IMAGE
 
     v = Visualizer(
-        image, metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
+        image[:, :, ::-1], metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
     )
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    return out.get_image()
+    return out.get_image()[:, :, ::-1]
 
 @st.cache
 def read_image(uploaded_img):
@@ -117,9 +117,6 @@ if __name__ == '__main__':
 
 
 # TO DO
-# - better UI, add option to remove color
-# - fix image avec RGB
 # - fix readme + gif
 # - upload on streamlit
 # - change repo name + simplify
-# - move requirements / fix it
