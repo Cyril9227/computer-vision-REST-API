@@ -33,6 +33,7 @@ def get_config_path(model_name):
 def get_weights_url(model_name):
   return WEIGHTS[model_name]
 
+@st.cache(persist=True)
 def load_model(cfg_path, weights_path, use_cpu=True):
     """
     Create a simple predictor object from config path
@@ -52,14 +53,13 @@ def load_model(cfg_path, weights_path, use_cpu=True):
     return DefaultPredictor(cfg)
 
 
-def predict(model, image, remove_colors=False):
-    """Read the image from the path stored in memory (global var), compute the masks and
-    the % of masked pixels, store the resulting image in the desired location then redirect to the
-    show_image.html page
-    """
-    balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
+@st.cache
+def predict(model, image):
+    return model(image)
 
-    outputs = model(image)
+@st.cache
+def draw_predictions(image, outputs, remove_colors=False):
+    balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
     tensor = outputs["instances"].pred_masks.to("cpu").numpy()
 
     # remove the colors of unsegmented pixels for better readibility
@@ -72,6 +72,8 @@ def predict(model, image, remove_colors=False):
     return out.get_image()
 
 
+
+
 # pb c'est qu'on va load le modèle à chaque fois qu'on upload une image -> lent
 # mais si on load le modèle avant bah ça prends que le premier modele de st.selectbox
 # ptet la solution c de faire une clause avant
@@ -81,11 +83,12 @@ def build_app():
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, 1)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
         cfg_path = get_config_path(selected_model)
         weights_url = get_weights_url(selected_model)
         model = load_model(cfg_path, weights_url)
-        result_img = predict(model, img)
+        outputs = predict(model, img)
+        result_img = draw_predictions(img, outputs, remove_colors=False)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
 if __name__ == '__main__':
