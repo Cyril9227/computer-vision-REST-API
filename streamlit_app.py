@@ -87,7 +87,7 @@ def run_app():
 
 def main():
     # Render the readme as markdown using st.markdown.
-    readme_text = st.markdown("INSTRUCTIONS.md")
+    readme_text = st.markdown("""{}""".format(open("INSTRUCTIONS.md").read()))
 
     # Once we have the dependencies, add a selector for the app mode on the sidebar.
     st.sidebar.title("What to do")
@@ -97,7 +97,7 @@ def main():
         st.sidebar.success('To continue select "Run the app".')
     elif app_mode == "Show the source code":
         readme_text.empty()
-        st.code("streamlit_app.py")
+        st.code("""{}""".format(open("streamlit_app.py").read()))
     elif app_mode == "Run the app":
         readme_text.empty()
         run_app()
