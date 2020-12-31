@@ -27,12 +27,7 @@ WEIGHTS = {
           'VoVNet-19' : 'https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1'
           }
 
-def get_config_path(model_name):
-  return CONFIGS[model_name]
-
-def get_weights_url(model_name):
-  return WEIGHTS[model_name]
-
+# avoid loading the model each time we upload an image
 @st.cache(persist=True)
 def load_model(cfg_path, weights_path, use_cpu=True):
     """
@@ -71,25 +66,31 @@ def draw_predictions(image, outputs, remove_colors=False):
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
     return out.get_image()
 
+@st.cache
+def read_image(uploaded_img):
+    file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    return img
 
 
-
-# pb c'est qu'on va load le modèle à chaque fois qu'on upload une image -> lent
-# mais si on load le modèle avant bah ça prends que le premier modele de st.selectbox
-# ptet la solution c de faire une clause avant
 def build_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
-        file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-        cfg_path = get_config_path(selected_model)
-        weights_url = get_weights_url(selected_model)
-        model = load_model(cfg_path, weights_url)
+        img = read_image(uploaded_img)
+        model = load_model(CONFIGS[selected_model], WEIGHTS[selected_model])
         outputs = predict(model, img)
         result_img = draw_predictions(img, outputs, remove_colors=False)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
 if __name__ == '__main__':
     build_app()
+
+
+# TO DO
+# - better UI, add option to remove color / show code source / show instructions on the side
+# - fix image avec RGB
+# - fix readme + gif
+# - upload on streamlit
+# - change repo name + simplify
