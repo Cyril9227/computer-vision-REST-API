@@ -85,8 +85,8 @@ def read_image(uploaded_img):
 def run_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
+    remove_colors = st.select_slider('Disable Colors', options=[False, True])
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
-    remove_colors = st.slider('Disable Colors', 0, 1)
     if uploaded_img is not None:
         img = read_image(uploaded_img)
         model = load_model(CONFIGS[selected_model], WEIGHTS[selected_model])
