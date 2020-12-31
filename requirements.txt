@@ -1,3 +1,3 @@
 PyYAML==5.1
 opencv-python==4.1.2.30
-detectron2==0.3+cu101
+detectron2==0.3+cpu
