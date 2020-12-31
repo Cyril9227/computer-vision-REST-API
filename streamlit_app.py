@@ -62,8 +62,7 @@ def load_model(cfg_path, weights_path):
 def predict(model, image):
     return model(image)
 
-@st.cache
-def draw_predictions(image, outputs, remove_colors=False):
+def draw_predictions(image, outputs, remove_colors):
     balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
     tensor = outputs["instances"].pred_masks.to("cpu").numpy()
 
@@ -76,7 +75,6 @@ def draw_predictions(image, outputs, remove_colors=False):
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
     return out.get_image()[:, :, ::-1]
 
-@st.cache
 def read_image(uploaded_img):
     file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
     return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -85,7 +83,7 @@ def read_image(uploaded_img):
 def run_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
-    remove_colors = st.select_slider('Disable Colors', options=[False, True])
+    remove_colors = st.select_slider('Remove Colors', options=[False, True])
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
     if uploaded_img is not None:
         img = read_image(uploaded_img)
