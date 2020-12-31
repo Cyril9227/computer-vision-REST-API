@@ -29,7 +29,7 @@ WEIGHTS = {
 
 # avoid loading the model each time we upload an image
 @st.cache(persist=True)
-def load_model(cfg_path, weights_path, use_cpu=True):
+def load_model(cfg_path, weights_path):
     """
     Create a simple predictor object from config path
 
@@ -39,8 +39,8 @@ def load_model(cfg_path, weights_path, use_cpu=True):
     cfg = get_cfg()
     add_custom_config(cfg)
     cfg.merge_from_file(cfg_path)
-    if use_cpu:
-        cfg.MODEL.DEVICE = "cpu"
+    # run inference on CPU
+    cfg.MODEL.DEVICE = "cpu"
     cfg.MODEL.WEIGHTS = weights_path
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = (
         0.7  # set the testing threshold for this model
@@ -73,7 +73,7 @@ def read_image(uploaded_img):
     return img
 
 
-def build_app():
+def run_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
@@ -84,8 +84,26 @@ def build_app():
         result_img = draw_predictions(img, outputs, remove_colors=False)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
+
+def main():
+    # Render the readme as markdown using st.markdown.
+    readme_text = st.markdown("INSTRUCTIONS.md")
+
+    # Once we have the dependencies, add a selector for the app mode on the sidebar.
+    st.sidebar.title("What to do")
+    app_mode = st.sidebar.selectbox("Choose the app mode",
+        ["Show instructions", "Run the app", "Show the source code"])
+    if app_mode == "Show instructions":
+        st.sidebar.success('To continue select "Run the app".')
+    elif app_mode == "Show the source code":
+        readme_text.empty()
+        st.code("streamlit_app.py")
+    elif app_mode == "Run the app":
+        readme_text.empty()
+        run_app()
+
 if __name__ == '__main__':
-    build_app()
+    main()
 
 
 # TO DO
@@ -94,3 +112,4 @@ if __name__ == '__main__':
 # - fix readme + gif
 # - upload on streamlit
 # - change repo name + simplify
+# - move requirements / fix it
