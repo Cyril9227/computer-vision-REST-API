@@ -1,15 +1,25 @@
+"""
+
+Simple Streamlit app demonstrating the usage of Detectron2 with custom neural networks.
+
+Author : Cyril Equilbec
+
+
+"""
+
+
+
 import cv2
 
 import numpy as np
 import streamlit as st
-
-from PIL import Image
 
 from detectron2.config import get_cfg
 from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
+# Need this import to show Detectron2 our custom backbones
 from MaskRCNN_finetune.src.models.backbone import *
 from MaskRCNN_finetune.src.models.custom_config import add_custom_config
 
@@ -69,19 +79,19 @@ def draw_predictions(image, outputs, remove_colors=False):
 @st.cache
 def read_image(uploaded_img):
     file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-    return img
+    return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
 
 def run_app():
     st.title('Object Recognition App')
     selected_model = st.selectbox('Select a Model : ', ['MobileNetV2', 'VoVNet-19', 'ResNet-50', 'ResNet-101'])
     uploaded_img = st.file_uploader("Upload an image : ", type=['jpg', 'jpeg', 'png'])
+    remove_colors = st.slider('Disable Colors', 0, 1)
     if uploaded_img is not None:
         img = read_image(uploaded_img)
         model = load_model(CONFIGS[selected_model], WEIGHTS[selected_model])
         outputs = predict(model, img)
-        result_img = draw_predictions(img, outputs, remove_colors=False)
+        result_img = draw_predictions(img, outputs, remove_colors=remove_colors)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
 
@@ -107,7 +117,7 @@ if __name__ == '__main__':
 
 
 # TO DO
-# - better UI, add option to remove color / show code source / show instructions on the side
+# - better UI, add option to remove color
 # - fix image avec RGB
 # - fix readme + gif
 # - upload on streamlit
