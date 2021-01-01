@@ -91,7 +91,7 @@ def run_app():
         img = read_image(uploaded_img)
         model = load_model(CONFIGS[selected_model], WEIGHTS[selected_model])
         outputs = predict(model, img)
-        result_img = draw_predictions(img, outputs, remove_colors=remove_colors)
+        result_img = draw_predictions(img, outputs, remove_colors=True)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
 
