@@ -1,10 +1,7 @@
 """
-
 Simple Streamlit app demonstrating the usage of Detectron2 with custom neural networks.
 
 Author : Cyril Equilbec
-
-
 """
 
 
@@ -70,7 +67,6 @@ def predict(model, image):
 
 def draw_predictions(image, outputs, remove_colors):
     balloon_metadata = MetadataCatalog.get("balloon").set(thing_classes=["balloon"])
-    tensor = outputs["instances"].pred_masks.to("cpu").numpy()
 
     # remove the colors of unsegmented pixels for better readibility
     color_mode = ColorMode.IMAGE_BW if remove_colors else ColorMode.IMAGE
@@ -91,7 +87,7 @@ def run_app():
         img = read_image(uploaded_img)
         model = load_model(CONFIGS[selected_model], WEIGHTS[selected_model])
         outputs = predict(model, img)
-        result_img = draw_predictions(img, outputs, remove_colors=True)
+        result_img = draw_predictions(img, outputs, remove_colors=remove_colors)
         st.image(result_img, caption='Processed Image', use_column_width=True)
 
 
