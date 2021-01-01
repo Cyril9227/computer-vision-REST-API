@@ -37,6 +37,12 @@ WEIGHTS = {
           'VoVNet-19' : 'https://www.dropbox.com/s/smm7t8jsyp05m4r/VoVNet19_FPN_model_final.pth?dl=1'
           }
 
+
+def read_image(uploaded_img):
+    file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
+    return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+
 # avoid loading the model each time we upload an image
 @st.cache(persist=True)
 def load_model(cfg_path, weights_path):
@@ -73,11 +79,7 @@ def draw_predictions(image, outputs, remove_colors):
         image[:, :, ::-1], metadata=balloon_metadata, scale=0.8, instance_mode=color_mode,
     )
     out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
-    return out.get_image()[:, :, ::-1]
-
-def read_image(uploaded_img):
-    file_bytes = np.asarray(bytearray(uploaded_img.read()), dtype=np.uint8)
-    return cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    return out.get_image()
 
 
 def run_app():
